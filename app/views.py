@@ -5,8 +5,11 @@ Werkzeug Documentation:  http://werkzeug.pocoo.org/documentation/
 This file creates your application.
 """
 
-from app import app
+from app import app,mail
 from flask import render_template, request, redirect, url_for, flash
+from forms import ContactForm
+from flask_mail import Message
+
 
 
 ###
@@ -24,7 +27,21 @@ def about():
     """Render the website's about page."""
     return render_template('about.html', name="Mary Jane")
 
-
+@app.route('/contact', methods=["POST","GET"])
+def contact():
+    myform=ContactForm()
+    """Render the website's contact page."""
+    if request.method == 'POST' and myform.validate_on_submit():
+        send_mail(myform.name.data,myform.email.data,myform.subject.data,myform.message.data)
+        flash('Successfully sent')
+        return redirect(url_for('home'))
+    else:
+        return render_template('contact.html',form=myform,addtext='Error with sending')
+ 
+def send_mail(name,email,subject,message):
+	msg = Message(subject, sender=(name,email), recipients=["to@example.com"])
+	msg.body = message
+	mail.send(msg)  
 ###
 # The functions below should be applicable to all Flask apps.
 ###
